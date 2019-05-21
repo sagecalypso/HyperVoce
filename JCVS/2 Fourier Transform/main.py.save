@@ -1,0 +1,43 @@
+#!/usr/bin/python3
+
+import pyaudio
+import numpy as np
+import scipy
+from sampleQueue import SampleQueue
+
+CHUNK = 64
+WIDTH = 2
+CHANNELS = 1
+RATE = 44100
+FFT_RESOLUTION = 100
+
+#initialize pyaudio
+p = pyaudio.PyAudio()
+
+#create a sample queue for fft
+q = SampleQueue(FFT_RESOLUTION, CHUNK)
+
+#set up a stream for input and output
+stream = p.open(format=p.get_format_from_width(WIDTH),
+		channels=CHANNELS,
+		rate=RATE,
+		input=True,
+		output=True,
+		frames_per_buffer=CHUNK)
+
+print("* recording")
+
+try:
+	while True:
+		data = str
+		q.push(np.frombuffer(data, dtype=np.uint8))
+		fft = q.fft().real
+		stream.write(data, CHUNK)
+except KeyboardInterrupt:
+	print("* stopped recording")
+finally:
+	#stop and close the stream
+	stream.stop_stream()
+	stream.close()
+	#shut down pyaudio
+	p.terminate()

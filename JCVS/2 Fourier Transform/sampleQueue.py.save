@@ -1,0 +1,16 @@
+import numpy as np
+import scipy
+
+class SampleQueue(object):
+	def __init__(self, fftResolution, bufferSize):
+		"""Stores a collection of small buffers and computes the fft of the collection as a whole"""
+		self.__bufferSize__ = bufferSize
+		self.__bufferCount__ = int(np.ceil(fftPrecision / bufferSize))
+		self.__buffers__ = [np.zeros(bufferSize, dtype=np.complex128) for i in range(self.__bufferCount__)]
+	def push(self, buf):
+		"""Appends a small buffer to the end of the large buffer"""
+		self.__buffers__.append(buf)
+		self.__buffers__.pop(0)
+	def fft(self):
+		"""Gets the fft of the entire buffer"""
+		return scipy.fft(np.concatenate(self.__buffers__))[:self.__fftPrecision__]
