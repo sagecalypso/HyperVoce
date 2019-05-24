@@ -27,7 +27,7 @@ void fft(float[FFT_N], float[FFT_N], float[FFT_N], float[FFT_N]);
 
 void ifft(float[FFT_N], float[FFT_N], float[FFT_N], float[FFT_N]);
 
-void rfft(float[FFT_N], float[FFT_N], float[FFT_N], u_int16_t)
+void rfft(float[FFT_N], float[FFT_N], float[FFT_N], u_int16_t);
 
 
 /*
@@ -185,5 +185,6 @@ void rfft(float X_Re[FFT_N], float Y_Re[FFT_N], float Y_Im[FFT_N], u_int16_t sta
   // Apply butterfly operations
   fftDITbutterfly(Y_Re, Y_Im, FFT_N);
 }
+
 
 #endif

@@ -1,26 +1,36 @@
 /*
 //
-// pass-through.c
+// fft-reassembly.c
 //
+// Author: Weston Cook
 // Derived from tutorials at portaudio.com
 //
 // Distributed under the Mozilla Public License 2.0
 //
 // Description:
-//	Demonstrates audio pass-through using the default input and output devices.
+//	Demonstrates FFT capabilities by piping the input stream through an FFT and back
+//	 through an inverse FFT and then passing the resulting audio to the output device.
 //
 */
-#include "../include/portaudio.h"
-#include "../include/pa_linux_alsa.h"
+#include "../portaudio.h"
+#include "../pa_linux_alsa.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <math.h>
 
 
-#define BUFFER_SIZE 32
-#define SAMPLE_RATE 48000
+#define FFT_N 512
+#define FFT_LOG2N 9
+#define CIRCULAR_BUFFER_SIZE 1024
+#define INPUT_BUFFER_SIZE 256
+#define SAMPLE_RATE 44100
 #define SAMPLE_FORMAT paInt16
-#define SAMPLE_TYPE u_int16_t
+#define SAMPLE_TYPE int16_t
+#define FOURIER_TYPE float
+
+
+#include "../include/fourierBuffer.h"
 
 
 static int wireCallback(
@@ -38,13 +48,22 @@ int openDefaultDuplexStream(PaStream** stream, void* userData, PaError* err);
 int main() {
 	PaStream* stream = NULL;
 	PaError err;
+	fourierBuffer fBuf; fourierBufferInit(&fBuf);
+	generateLookupTables();
+
+	printf("sample rate:\t\t%d Hz\n", SAMPLE_RATE);
+	printf("input buffer size:\t%d samples\n", INPUT_BUFFER_SIZE);
+	printf("circular buffer size:\t%d samples\n", CIRCULAR_BUFFER_SIZE);
+	printf("lowest frequency:\t%f Hz\n", (float)(SAMPLE_RATE) / (float)(CIRCULAR_BUFFER_SIZE));
+	printf("minimum latency:\t%f ms\n", (float)(INPUT_BUFFER_SIZE * 3000) / (float)(SAMPLE_RATE));
+	printf("\n");
 
 	// Initialize portaudio
 	err = Pa_Initialize();
 	if (err != paNoError) goto error;
 
 	// Open a stream using the default input and output devices
-	if (!openDefaultDuplexStream(&stream, NULL, &err)) goto error;
+	if (!openDefaultDuplexStream(&stream, &fBuf, &err)) goto error;
 	if (err != paNoError) goto error;
 
 	// Start the stream
@@ -82,16 +101,23 @@ static int wireCallback(
                 void* userData) {
 	SAMPLE_TYPE* in;
 	SAMPLE_TYPE* out;
+	fourierBuffer* fBuf;
 	long i;
 
 	if ( inputBuffer == NULL || outputBuffer == NULL ) return paContinue;
 
 	in = ((SAMPLE_TYPE**)inputBuffer)[0];
 	out = ((SAMPLE_TYPE**)outputBuffer)[0];
+	fBuf = ((fourierBuffer*)userData);
 
-	for (i = 0; i < framesPerBuffer; i++) {
-		*out++ = *in++;
-	}
+	// Write the new data to the fourierBuffer
+	fourierBufferWrite(fBuf, in);
+
+	// Compute the fourier transform
+	fourierBufferComputeFFT(fBuf);
+
+	// Compute the inverse fourier transform
+	fourierBufferComputeIFFT(fBuf, out, framesPerBuffer);
 
 	return paContinue;
 }
@@ -124,7 +150,7 @@ int openDefaultDuplexStream(PaStream** stream, void* userData, PaError* err) {
 			&inputParameters,
 			&outputParameters,
 			SAMPLE_RATE,
-			BUFFER_SIZE,
+			INPUT_BUFFER_SIZE,
 			paClipOff,
 			wireCallback,
 			userData);

@@ -37,9 +37,9 @@
 #include <math.h>
 
 
-const u_int16_t RBO_LUT[FFT_N];
-const float COS_LUT[FFT_N];
-const float SIN_LUT[FFT_N];
+u_int16_t RBO_LUT[FFT_N];
+float COS_LUT[FFT_N];
+float SIN_LUT[FFT_N];
 
 
 u_int16_t reverseBits(u_int16_t, u_int16_t);

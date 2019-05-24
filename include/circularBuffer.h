@@ -99,7 +99,7 @@ void circularBufferWrite(circularBuffer* cBuf, SAMPLE_TYPE inBuf[INPUT_BUFFER_SI
 	u_int16_t i;
 
 	for (i = 0; i < INPUT_BUFFER_SIZE; i++) {
-		cBuf->inputBuffer[cBuf->readWritePos++] = inBuf[i];
+		cBuf->buffer[cBuf->readWritePos++] = inBuf[i];
 
 		// Wrap the read/write head back if necessary
 		if (cBuf->readWritePos >= CIRCULAR_BUFFER_SIZE)
