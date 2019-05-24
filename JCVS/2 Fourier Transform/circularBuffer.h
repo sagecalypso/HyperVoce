@@ -1,63 +1,108 @@
-#ifndef FOURIER_TRANSFORM_H
-#define FOURIER_TRANSFORM_H
+/*
+// Author: Weston Cook
+//
+// Distributed under the Mozilla Public Licence 2.0
+//
+// Description:
+//	Defines struct circularBuffer, which uses a circular array to store samples.
+//	Also defines two helper functions for circularBuffer:
+//		circularBufferInit(circularBuffer*) -- initializes a circularBuffer object
+//		circularBufferWrite(circularBuffer*, SAMPLE_TYPE[INPUT_BUFFER_SIZE]) -- writes data to a circularBuffer object
+//
+*/
+#ifndef VOCAL_SYNTH_CIRCULAR_BUFFER_H
+#define VOCAL_SYNTH_CIRCULAR_BUFFER_H
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
-#ifndef IO_BUFFER_SIZE
-#error "IO_BUFFER_SIZE not defined."
-#endif
+
+/*
+//
+// Required preprocessor definitions.
+//
+// CIRCULAR_BUFFER_SIZE (int) -- size of circular buffer
+//
+// INPUT_BUFFER_SIZE (int) -- size of buffer used for adding to the circular buffer
+//
+// SAMPLE_TYPE (typename) -- type of samples to store
+//
+*/
 #ifndef CIRCULAR_BUFFER_SIZE
 #error "CIRCULAR_BUFFER_SIZE not defined."
+#endif
+#ifndef INPUT_BUFFER_SIZE
+#error "IO_BUFFER_SIZE not defined."
 #endif
 #ifndef SAMPLE_TYPE
 #error "SAMPLE_TYPE not defined."
 #endif
 
-typedef struct {
-	//structure to hold a large buffer for Fourier transform
-	SAMPLE_TYPE inputBuffer[CIRCULAR_BUFFER_SIZE];
-	u_int32_t readWritePos;
+
+/*
+//
+// struct circularBuffer
+//
+// Description:
+//	Stores an array of samples that is written/read circularly for efficiency.
+//
+*/
+typedef struct
+{
+	SAMPLE_TYPE buffer[CIRCULAR_BUFFER_SIZE];
+	u_int16_t readWritePos;
 } circularBuffer;
 
-void circularBufferInit(circularBuffer* cBuf) {
-	//initialize all critical values to zero
+
+/*
+//
+// void circularBufferInit
+//
+// Description:
+//	Initializes the values in the given circularBuffer to zeros.
+//
+// Arguments:
+//	circularBuffer* cBuf -- a pointer to the circularBuffer object to be initialized
+//
+*/
+void circularBufferInit(circularBuffer* cBuf)
+{
 	u_int16_t i;
 
-	//initialize input buffer to all zeros
+	// Initialize buffer to all zeros
 	for (i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
-		cBuf->inputBuffer[i] = 0;
+		cBuf->buffer[i] = 0;
 	}
 
-	//initialize read/write head position to zero
+	// Initialize read/write head position to zero
 	cBuf->readWritePos = 0;
 }
 
-void circularBufferWrite(circularBuffer* cBuf, SAMPLE_TYPE inBuf[IO_BUFFER_SIZE]) {
-	//write the given small data buffer to the given Fourier buffer, wrapping it around starting at the current read/write head position
+
+/*
+//
+// void circularBufferWrite
+//
+// Description:
+//	Appends the contents given small data buffer to the circularBuffer.
+//
+// Arguments:
+//	circularBuffer* cBuf -- a pointer to the circularBuffer to be written to
+//	SAMPLE_TYPE inBuf[INPUT_BUFFER_SIZE] -- a buffer containing input data
+//
+*/
+void circularBufferWrite(circularBuffer* cBuf, SAMPLE_TYPE inBuf[INPUT_BUFFER_SIZE]) {
 	u_int16_t i;
 
-	//iterate the data buffer
-	for (i = 0; i < IO_BUFFER_SIZE; i++) {
-		//write the current dataBuf value to the current fourBuf value
+	for (i = 0; i < INPUT_BUFFER_SIZE; i++) {
 		cBuf->inputBuffer[cBuf->readWritePos++] = inBuf[i];
-		//wrap the read/write head back if necessary
+
+		// Wrap the read/write head back if necessary
 		if (cBuf->readWritePos >= CIRCULAR_BUFFER_SIZE)
 			cBuf->readWritePos = 0;
 	}
 }
 
-float circularBufferPitchDetect(circularBuffer* cBuf) {
-	//return the estimated most recent frequency of the input voice
-	u_int16_t i;
-
-	for (i = 0; i < CIRCULAR_BUFFER_SIZE; i++) {
-		cBuf->inputBuffer[cBuf->readWritePos--];
-		//wrap the read/write head back if necessary
-		if (cBuf->readWritePos >= CIRCULAR_BUFFER_SIZE)
-			cBuf->readWritePos = CIRCULAR_BUFFER_SIZE - 1;
-	}
-}
 
 #endif
