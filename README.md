@@ -24,4 +24,4 @@ HyperVoce requires the following libraries for compilation:
 To get started with HyperVoce, grab a copy of the code and compile the files in the "src" directory. These are each independent main executables for each of the modes of operation. This software has been written and tested using Ubuntu, though it's dependencies were selected with the goal of platform compatibility. See <a href="www.portaudio.com">PortAudio</a>'s cross-platform compatibility details for more information.
 
 ## Interested in Contributing?
-If you would like to contribute to this project, see CONTRIBUTING.md for guidelines on how to get started.
+If you would like to contribute to this project, see <a href="https://github.com/wwilliamcook/HyperVoce/blob/master/CONTRIBUTING.md">CONTRIBUTING</a> for guidelines on how to get started.
