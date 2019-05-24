@@ -1,6 +1,8 @@
 # HyperVoce
 HyperVoce is a real time vocoder/voice duplicator inspired by Jacob Collier's iconic choral synthesizer. It uses a MIDI input stream to transform the carrier voice to imitate a choir.
 
+<strong>NOTE: This project is still in its infancy and is not yet operational. To view development progress, see other branches. Most development work is currently being done in the "testing" branch.</strong>
+
 ### Modes of Operation
 HyperVoce has three distinct modes of operation:
   - Voice duplicator
